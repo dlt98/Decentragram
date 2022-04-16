@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Web3 from "web3";
 import Identicon from "identicon.js";
 import "./App.css";
@@ -22,16 +22,38 @@ const loadWeb3 = async () => {
 const App = () => {
   const [account, setAccount] = useState("");
   const [loading, setLoading] = useState(true);
+  const [contract, setContract] = useState(null);
 
-  loadWeb3();
-  loadBlockchainData();
+  useEffect(() => {
+    loadWeb3();
+    loadBlockchainData();
+  }, []);
 
   async function loadBlockchainData() {
     const web3 = await window.web3;
     const accounts = await web3.eth.getAccounts();
 
+    const networkId = await web3.eth.net.getId();
+    const networkData = Decentragram.networks[networkId];
+
     setAccount(accounts[0]);
-    setLoading(false);
+
+    //Check if the contract is on the ganache network
+    if (networkData) {
+      const decentragram = new web3.eth.Contract(
+        Decentragram.abi,
+        networkData.address
+      );
+
+      setContract(decentragram);
+      setLoading(false);
+
+      const imageCount = await decentragram.methods.imageCount().call();
+
+      console.log("imageCount", imageCount);
+    } else {
+      window.alert("Decentragram has not been deployed to this network");
+    }
   }
 
   return (
