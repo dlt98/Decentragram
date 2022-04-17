@@ -1,0 +1,8 @@
+This is a simple project to make a decentralized blockchain instagram.
+
+It consists of :
+
+    1. Smart contract which allows the storage of IPFS image hash and to tip the owner of the image
+    2. Frontend built with React and web3.js to connect the smart contract to frontend app
+
+Original idea from DappUniversity
