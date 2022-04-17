@@ -114,6 +114,17 @@ const App = () => {
     });
   };
 
+  const tipImageOwner = async (id, tipAmount) => {
+    setLoading(true);
+
+    decentragram.methods
+      .tipImageOwner(id)
+      .send({ from: account, value: tipAmount })
+      .on("transactionHash", (hash) => {
+        setLoading(false);
+      });
+  };
+
   console.log("images", images);
   return (
     <div>
@@ -127,6 +138,7 @@ const App = () => {
           captureFile={captureFile}
           uploadImage={uploadImage}
           images={images}
+          tipImageOwner={tipImageOwner}
         />
       )}
     </div>

@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import Image from "./Image";
 
-const Main = ({ captureFile, uploadImage, images }) => {
+const Main = ({ captureFile, uploadImage, images, tipImageOwner }) => {
   const descriptionRef = useRef();
   return (
     <div className="container-fluid mt-5">
@@ -42,6 +42,19 @@ const Main = ({ captureFile, uploadImage, images }) => {
                 Upload!
               </button>
             </form>
+          </div>
+          <div>
+            {images.map((image, index) => (
+              <Image
+                author={image.author}
+                hash={image.hash}
+                description={image.description}
+                tipAmount={image.tipAmount}
+                id={image.id}
+                tipImageOwner={tipImageOwner}
+                key={index}
+              />
+            ))}
           </div>
         </main>
       </div>
