@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from "react";
 import Web3 from "web3";
-import Identicon from "identicon.js";
 import "./App.css";
 import Decentragram from "../abis/Decentragram.json";
 import Navbar from "./Navbar";
 import Main from "./Main";
+
+const ipfsClient = require("ipfs-http-client");
+const ipfs = ipfsClient({
+  host: "ipfs.infura.io",
+  port: 5001,
+  protocol: "https",
+});
+//If you don't put any arguments it will default to these
 
 const loadWeb3 = async () => {
   if (window.ethereum) {
@@ -22,7 +29,9 @@ const loadWeb3 = async () => {
 const App = () => {
   const [account, setAccount] = useState("");
   const [loading, setLoading] = useState(true);
-  const [contract, setContract] = useState(null);
+  const [decentragram, setDecentragram] = useState(null);
+  const [buffer, setBuffer] = useState(null);
+  const [images, setImages] = useState([]);
 
   useEffect(() => {
     loadWeb3();
@@ -45,17 +54,67 @@ const App = () => {
         networkData.address
       );
 
-      setContract(decentragram);
+      setDecentragram(decentragram);
       setLoading(false);
-
-      const imageCount = await decentragram.methods.imageCount().call();
-
-      console.log("imageCount", imageCount);
+      populateImages(decentragram);
     } else {
       window.alert("Decentragram has not been deployed to this network");
     }
   }
 
+  async function populateImages(decentragram) {
+    const imageCount = await decentragram.methods.imageCount().call();
+
+    const allImages = [];
+    for (let i = 0; i < imageCount; i++) {
+      const image = await decentragram.methods.images(i).call();
+
+      allImages.push(image);
+    }
+
+    setImages(allImages);
+  }
+
+  const captureFile = (e) => {
+    e.preventDefault();
+    const file = e.target.files[0];
+    const reader = new window.FileReader();
+
+    reader.readAsArrayBuffer(file);
+
+    reader.onloadend = () => {
+      setBuffer(Buffer(reader.result));
+      console.log("buffer", buffer);
+    };
+  };
+
+  const uploadImage = (description) => {
+    console.log("Submitting file to ipfs...");
+    if (!buffer) {
+      console.log("Nothing in the bugger");
+      return;
+    }
+
+    //Adding file to ipfs
+    ipfs.add(buffer, (err, res) => {
+      console.log("Ipfs result", res);
+
+      if (err) {
+        console.error(err);
+        return;
+      }
+
+      setLoading(true);
+      decentragram.methods
+        .uploadImage(res[0].hash, description)
+        .send({ from: account })
+        .on("transactionHash", (hash) => {
+          setLoading(false);
+        });
+    });
+  };
+
+  console.log("images", images);
   return (
     <div>
       <Navbar account={account} />
@@ -65,7 +124,9 @@ const App = () => {
         </div>
       ) : (
         <Main
-        // Code...
+          captureFile={captureFile}
+          uploadImage={uploadImage}
+          images={images}
         />
       )}
     </div>
