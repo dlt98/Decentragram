@@ -72,6 +72,9 @@ const App = () => {
       allImages.push(image);
     }
 
+    //Sorting images
+    allImages.sort((a, b) => a - b);
+
     setImages(allImages);
   }
 
