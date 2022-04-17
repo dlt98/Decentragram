@@ -26,6 +26,7 @@
   "homepage": "http://dappuniversity.github.io/decentragram",
   "scripts": {
     "start": "react-scripts start",
+    "contract-build": "truffle mirate --reset",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
